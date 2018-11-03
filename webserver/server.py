@@ -16,6 +16,8 @@ import numpy
 import json
 from tornado.options import define, options
 import tornado.httpserver
+import sys
+sys.path.append('../')
 import opencv
 import ssl
 
@@ -25,11 +27,7 @@ class Application(tornado.web.Application):
   def __init__(self):
     handlers = [
         (r"/", MainHandler),
-        (r"/facedetector", FaceDetectHandler),
-        #(r"/", SetupHarvestHandler),
-        (r"/harvesting", HarvestHandler),
-        (r"/predict", PredictHandler),
-        (r"/train", TrainHandler)
+        (r"/facedetector", FaceDetectHandler)
         ]
 
     settings = dict(
@@ -70,56 +68,11 @@ class FaceDetectHandler(SocketHandler):
       result = json.dumps(faces.tolist())
       self.write_message(result)
 
-class SetupHarvestHandler(tornado.web.RequestHandler):
-  def get(self):
-    self.render("harvest.html")
-
-  def post(self):
-    name = self.get_argument("label", None)
-    if not name:
-      logging.error("No label, bailing out")
-      return
-    logging.info("Got label %s" %  name)
-    opencv.Label.get_or_create(name=name).persist()
-    logging.info("Setting secure cookie %s" % name)
-    self.set_secure_cookie('label', name)
-    self.redirect("/")
-
-class HarvestHandler(SocketHandler):
-  def process(self, cv_image):
-    label = opencv.Label.get(opencv.Label.name == self.get_secure_cookie('label'))
-    logging.info("Got label: %s" % label.name)
-    if not label:
-      logging.info("No cookie, bailing out")
-      return
-    logging.info("About to save image")
-    result = opencv.Image(label=label).persist(cv_image)
-    if result == 'Done':
-      self.write_message(json.dumps(result))
-
-class TrainHandler(tornado.web.RequestHandler):
-  def post(self):
-    opencv.train()
-
-class PredictHandler(SocketHandler):
-    def process(self, cv_image):
-        result = opencv.predict(cv_image)
-        logging.info("We herez.")
-        if result: 
-            logging.info("We here.")
-            self.write_message(json.dumps(result))
 
 
 def main():
     tornado.options.parse_command_line()
-    #opencv.Image().delete()
-    #logging.info("Images deleted")
-    #opencv.Label().delete()
-    #logging.info("Labels deleted")
-    #opencv.load_images_to_db("data/images")
-    #logging.info("Labels and images loaded")
-    #opencv.train()
-    #logging.info("Model trained")
+    
     app = Application()
     ssl_ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
     ssl_ctx.load_cert_chain("ssl/domain.crt",
