@@ -27,7 +27,7 @@
        var data = openCvCoords[i];
         for (var j = 0, len2 = data.bbs.length; j < len2; ++j ){
           var bb = data.bbs[j]
-           ctx.strokeRect(bb[1],bb[0],bb[3],bb[2]);
+           ctx.strokeRect(bb[1],bb[0],bb[3] - bb[1],bb[2] - bb[0]);
         }
     }
     // Send the data.
