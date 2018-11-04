@@ -3,6 +3,8 @@
   var canvas, ctx, onError, onSuccess, update, video, ws_image_np;
     
   var ws_return;
+  var startTime = new Date();
+  var elapsedTime;
     
   var openCvCoords, tempOpenCvCoords;
   openCvCoords = []
@@ -30,15 +32,11 @@
            ctx.strokeRect(bb[1],bb[0],bb[3] - bb[1],bb[2] - bb[0]);
         }
     }
-    // Send the data.
-    //return canvas.toBlob(function(blob) {
-    //  return ws_image_np.send(blob);
-    //}, 'image/jpeg');
   };
 
-  video = document.querySelector('video');
+  video = document.querySelector('#live');
 
-  canvas = document.querySelector('canvas');
+  canvas = document.querySelector('#canvaswc');
 
   ctx = canvas.getContext('2d');
 
@@ -59,7 +57,7 @@
   // Move this to a new websocket
   ws_return.onmessage = function(e) {
     tempOpenCvCoords = JSON.parse(e.data);
-    return console.log('receiving message' + e.data);
+    return console.log('receiving message' + e.data +'. Buffered Amount: ' +  ws_return.bufferedAmount);
   };
 
 
