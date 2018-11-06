@@ -27,6 +27,7 @@ class Application(tornado.web.Application):
   def __init__(self):
     handlers = [
         (r"/", MainHandler),
+        (r"/test", TestHandler),
         (r"/facedetector", FaceDetectHandler)
         ]
 
@@ -41,6 +42,9 @@ class Application(tornado.web.Application):
     tornado.web.Application.__init__(self, handlers, **settings)
 
 class MainHandler(tornado.web.RequestHandler):
+  def get(self):
+    self.render("facedetect.html")
+class TestHandler(tornado.web.RequestHandler):
   def get(self):
     self.render("facedetect.html")
 
