@@ -2,11 +2,18 @@
 (function() {
   // Setup the canvas
     var wc_coords;
-    var videoCanvas = document.createElement('canvas');
-    var labelCanvas = document.createElement('canvas');
-    var ctxVideo;
+    var wcVideoCanvas = document.createElement('canvas'); // Temporary offscreen canvas
+    var ctxWcVideo;
+    var wcSendVideoCanvas = document.createElement('canvas'); // Temporary offscreen canvas
+    var ctxSendVideo;
+    var labelCanvas = document.createElement('canvas');// Temporary offscreen canvas
+    
+    // On Screen Canvas For all Draw Operations
+    var canvas = document.querySelector('#canvas');
+    
+    var videoHeight = 480; var videoWidth = 640;
+
     var ctxLabels;
-    var fontFace = cv.FONT_HERSHEY_SIMPLEX;
     var doneLoading = 0;
     // Face Data
     const faceImages = 'static/images/FaceRecognition/'
@@ -17,6 +24,10 @@
     var faceOmar = new Image();
     var faceMask = new Image();
     
+    // ML Result DATA. This needs to be renamed.
+    var openCvCoords, tempOpenCvCoords;
+    tempOpenCvCoords = [];
+    
     // CNN Variables
    var cnn_result_data, cnnImage;
    cnnImage = new Image();
@@ -25,7 +36,6 @@
     var canvasHeight = Math.floor(0.92*screen.height);
     document.getElementById('dashboard_header').style.height = Math.floor(0.08*screen.height) + 'px';
     document.getElementById('dashboard_body').style.height = canvasHeight + 'px';
-    var canvas = document.querySelector('#canvaswc');
     canvas.width = screen.width;
     canvas.height = canvasHeight;
     
@@ -85,13 +95,16 @@
       context.fillRect(cnn_x, cnn_y, cnn_x_, cnn_y_);  
     }
     function make_webcam(){
-    // Dummy holder for our CNN
-    context.fillStyle = "#FF00FF";
-    context.fillRect(wc_x, wc_y, wc_x_, wc_y_); 
-    videoCanvas.height = wc_y_;
-    videoCanvas.width = wc_x_;
-    ctxVideo = videoCanvas.getContext('2d');
-
+        // Dummy holder for our CNN
+        context.fillStyle = "#FF00FF";
+        context.fillRect(wc_x, wc_y, wc_x_, wc_y_); 
+        wcVideoCanvas.height = wc_y_;
+        wcVideoCanvas.width = wc_x_;
+        ctxWcVideo = wcVideoCanvas.getContext('2d');
+        
+        wcSendVideoCanvas.height = videoHeight;
+        wcSendVideoCanvas.width = videoWidth;
+        ctxSendVideo = wcSendVideoCanvas.getContext('2d');
     }
 
     function make_3dmodel(){
@@ -273,7 +286,7 @@
         var label_list = [];
         for (var i = 0, len = labels_data.length; i < len; ++i) {
             var data = labels_data[i];
-            if (data.type == "thread_data"){
+            if (data.type == "thread_data" && data.name != "thread_frm"){
                 for (var j = 0, len2 = data.unique_labels.length; j < len2; ++j ){
                     label_list.push(data.unique_labels[j]);
                 }
@@ -285,16 +298,15 @@
         ctxLabels.fillStyle = "#373540";
         ctxLabels.fillRect(0,0,labelCanvas.width, labelCanvas.height); 
 
-        var WIDTH = Math.floor(labelCanvas.width*0.15);
+        var WIDTH = Math.floor(labelCanvas.width*0.03);
         var HEIGHT = Math.floor(labelCanvas.height*0.15);
         function gen_dynamic_image_label(text){
-            fontFace = cv.FONT_HERSHEY_SIMPLEX;
             fontScale = 10;
 
             fontColor = (255,255,255);
             fontThicknes = 6;
-            padding = 40;
-            text_width = WIDTH + 1;
+            // Let the text width be a function of the number of characters.
+            text_width = Math.floor(WIDTH*text.length) + 1;
             if ((text.indexOf("barrel") > -1)){
                 text = text.split('-')[-1]
             }
@@ -302,7 +314,7 @@
 
             var dynamiclabelCanvas = document.createElement('canvas');
             dynamiclabelCanvas.height = HEIGHT;
-            dynamiclabelCanvas.width = Math.floor(text_width + padding);
+            dynamiclabelCanvas.width = Math.floor(text_width);
             var tmpCtx = dynamiclabelCanvas.getContext('2d');
 
             tmpCtx.fillStyle = "#0db025"; // Change To: [ 13, 176,  37]
@@ -310,7 +322,7 @@
 
             tmpCtx.font = fontScale + "pt Arial";
             tmpCtx.fillStyle = '#000000'
-            tmpCtx.fillText(text,Math.floor(padding/2), 20);
+            tmpCtx.fillText(text,10, 20);
 
             return dynamiclabelCanvas;
         }
@@ -385,14 +397,28 @@
   },500);
   setInterval(function(){
   if (doneLoading >= 7 && prev_face != face){
+      // Draw the bounding boxes
+        for (var i = 0, len = openCvCoords.length; i < len; ++i) {
+            var data = openCvCoords[i];
+            if (data.type == "face_display"){
+                face = data.name
+            }
+      } 
       drawFaceFrame(face);
       prev_face = face;
   }
     },500);
       
+  // Draw the Lidar Frame
   setInterval(function(){
   if (doneLoading >= 42){
-      console.log(doneLoading)
+      openCvCoords = tempOpenCvCoords;
+        for (var i = 0, len = openCvCoords.length; i < len; ++i) {
+            var data = openCvCoords[i];
+            if (data.type == "model_display"){
+                modelName = data.name
+            }
+        } 
       modelCounter = drawLidarFrame(modelName,modelCounter);
   }
     },100);
@@ -423,8 +449,7 @@
   var blobData;
     
     
-  var openCvCoords, tempOpenCvCoords;
-  tempOpenCvCoords = [];
+  
 
   onError = function(e) {
     return console.log("Rejected", e);
@@ -438,53 +463,84 @@
     }
     return setInterval(update, 50);
   };
-    
+  // -------------- BOUNDING BOXES GENERATION SCRIPT  ------------------- //
+  var bbTextSize, bbTextWPadding,bbTextHPadding;
+  // Let the textbox height be proportional to the size of the webcam frame.
+  var TEXT_BOX_HEIGHT = Math.floor(wc_coords[3]*0.05);
+  bbTextHPadding = Math.max(Math.floor(TEXT_BOX_HEIGHT*0.6),2);
+  console.log('text height' + bbTextHPadding);
+  // Set the bbText Size proportional to the size of the frame.
+  if (wc_coords[2] < 350){
+      bbTextSize = 14;
+      bbTextWPadding = 10;
+  }
+  else{
+      bbTextSize = 18;
+      bbTextWPadding = 5;
+  }
+
   function updateBoundingBoxes(){
+    // This draws the video then updates the bounding boxes. First offscreen rendering.
+    ctxWcVideo.drawImage(video, 0, 0, wc_coords[2], wc_coords[3]);
      openCvCoords = tempOpenCvCoords;
       var PADDING = 5;
-    // Draw the bounding boxes
-    for (var i = 0, len = openCvCoords.length; i < len; ++i) {
-        var data = openCvCoords[i];
-        if (data.type == "thread_data"){
-
-            for (var j = 0, len2 = data.bbs.length; j < len2; ++j ){
-                var bb = data.bbs[j]
-                console.log("BB: " + bb)
-                ctx.strokeRect(wc_coords[0] + bb[1] + PADDING,
-                               wc_coords[1] + bb[0] + PADDING,
-                               bb[3] - bb[1] - PADDING,
-                               bb[2] - bb[0] - PADDING);
+      var x,y,w,h;
+        // Draw the bounding boxes
+        for (var i = 0, len = openCvCoords.length; i < len; ++i) {
+            var data = openCvCoords[i];
+            if (data.type == "thread_data"){
+                for (var j = 0, len2 = data.bbs.length; j < len2; ++j ){
+                    var bb = data.bbs[j];
+                    var text = data.classes[j];
+                    // Draw the rectangle that will contain the object name.
+                    ctxWcVideo.fillStyle="#000000";
+                    x = bb[1];
+                    // Ensure that the rectangle is inside the allowable area.
+                    y = bb[0] - TEXT_BOX_HEIGHT;
+                    w = bb[3] - bb[1];
+                    h = TEXT_BOX_HEIGHT;
+                    ctxWcVideo.fillRect(x,y,w,h);
+                    // Draw the text inside the rectangle
+                    ctxWcVideo.font = bbTextSize + "pt Arial";
+                    ctxWcVideo.fillStyle = '#FFFFFF'
+                    ctxWcVideo.fillText(text,
+                                 x + bbTextWPadding, 
+                                 y + bbTextHPadding);
+                    // Draw the bounding box around the given obect
+                    ctxWcVideo.strokeRect(bb[1],
+                                   bb[0],
+                                   bb[3] - bb[1] - PADDING,
+                                   bb[2] - bb[0] - PADDING);
+                }
             }
         }
-    } 
+      // Update the entire canvas
+      ctx.drawImage(wcVideoCanvas, wc_coords[0], wc_coords[1], wc_coords[2], wc_coords[3]);
   }
 
   update = function() {
-    ctx.drawImage(video, wc_coords[0], wc_coords[1], wc_coords[2], wc_coords[3]);
     // Have a seperate canvas/context for storing just the video frame
     if (doneLoading > 0){
-        ctxVideo.drawImage(video,0,0,wc_coords[2],wc_coords[3]);
+        ctxSendVideo.drawImage(video,0,0);
+        updateBoundingBoxes();
     }
     // Store the blob data.
-    videoCanvas.toBlob(function(blob) {
-        blobData = blob;
+    wcSendVideoCanvas.toBlob(function(blob) {
+        ws_image_np.onmessage = function(e) {
+            // Send it only when needed.
+            return ws_image_np.send(blob);
+        };
     }, 'image/jpeg');
 
-    ws_image_np.onmessage = function(e) {
-           if (blobData != null){
-            // Send it only when needed.
-            return ws_image_np.send(blobData);
-           }
-        };
+    
 
     
-    updateBoundingBoxes();
   };
   
 
   video = document.querySelector('#live');
 
-  canvas = document.querySelector('#canvaswc');
+  
 
   ctx = canvas.getContext('2d');
 
@@ -524,7 +580,7 @@
 
 
 
-  var constraints = { audio: false, video: { width: 1280, height: 720 } }; 
+  var constraints = { audio: false, video: { width: videoWidth, height: videoHeight } }; 
   navigator.mediaDevices.getUserMedia(constraints)
      .then(onSuccess)
      .catch(onError);
