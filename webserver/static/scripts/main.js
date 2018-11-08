@@ -8,10 +8,16 @@
     var ctxSendVideo;
     var labelCanvas = document.createElement('canvas');// Temporary offscreen canvas
     
+    // Required for going full screen mode.
+    var isFullScreen = false;
+    var elem = document.documentElement;
+    var canvasHeight, headerHeight;
+    
     // On Screen Canvas For all Draw Operations
     var canvas = document.querySelector('#canvas');
     
     var videoHeight = 480; var videoWidth = 640;
+    var screenHeight = screen.height,screenWidth = screen.width;
 
     var ctxLabels;
     var doneLoading = 0;
@@ -28,55 +34,312 @@
     var openCvCoords, tempOpenCvCoords;
     tempOpenCvCoords = [];
     
+    
+    // Module Toggling Variables:
+    var moduleEnableWeaponOnly = false;
+    var moduleEnableWeaponParts = false;
+    var moduleEnable9K = false;
+    var moduleEnableCoco = false;
+    var moduleEnableShowAllClasses = false;
+    var moduleEnableFRM = false;
+    
+    
+    
+    // Extra variables
+    var prev_labels;
+    var prev_face;
+    var labels;
+    var face = "mask";
+    var modelName = "default"
+    var modelCounter = 0;
+    
     // CNN Variables
    var cnn_result_data, cnnImage;
    cnnImage = new Image();
+    
+  function sendResultData(){
+      ws_return.send(JSON.stringify({'image_properties':{'height':wc_coords[3],
+                                         'width':wc_coords[2],
+                                        },
+                                   'module_settings':{
+                                       'weapons_only':moduleEnableWeaponOnly,
+                                       'weapon_parts':moduleEnableWeaponParts,
+                                       'model_9k':moduleEnable9K,
+                                       'model_coco':moduleEnableCoco,
+                                       'show_all_classes':moduleEnableShowAllClasses,
+                                       'model_frm':moduleEnableFRM
+                                   }
+                                  }));
+  }
+
+  
 
   function init(){
-    var canvasHeight = Math.floor(0.92*screen.height);
-    document.getElementById('dashboard_header').style.height = Math.floor(0.08*screen.height) + 'px';
-    document.getElementById('dashboard_body').style.height = canvasHeight + 'px';
-    canvas.width = screen.width;
-    canvas.height = canvasHeight;
+  // Define the location of the CNN Object in the canvas
+      //0.3574074074
+    var cnn_x, cnn_x_, cnn_y, cnn_y_;
+    var wc_x, wc_y, wc_x_, wc_y_;
+    var m3d_x,m3d_y,m3d_x_,m3d_y_;
+    var frm_x,frm_y,frm_x_,frm_y_;
+    var labels_x,labels_y,labels_x_,labels_y_;
+
+      
+ 
+
+    function setupScreenSizes(){
+        cnn_x = 0.07369791666, cnn_x_ = 0.24010416666, cnn_y = 0.3074074074, cnn_y_ = 0.95601851851;
+        wc_x = 0.25703125, wc_y = 0.17407407407407406, wc_x_ = 0.7252604166666666, wc_y_ = 0.6355555555555556;
+        m3d_x = 0.7432291666666667, m3d_y = 0.6773148148148148, m3d_x_ = 0.9346354166666667, m3d_y_ = 0.9560185185185185;
+        frm_x = 0.7421875, frm_y = 0.05731481481481483, frm_x_ = 0.9361979166666666, frm_y_ = 0.3273148148148148;
+        labels_x = 0.74375, labels_y = 0.355537037037037, labels_x_ = 0.9346354166666667, labels_y_ = 0.6209259259259259;
+        canvasHeight = Math.floor(0.92*screenHeight);
+        headerHeight = screenHeight - canvasHeight;
+        document.getElementById('dashboard_header').style.height = headerHeight + 'px';
+        document.getElementById('header_table').style.height = headerHeight + 'px';
+        
+        document.getElementById('dashboard_body').style.height = canvasHeight + 'px';
+
+        document.getElementById('header_table').style.width = screenWidth + 'px';
+        document.getElementById('dashboard_header').style.width = screenWidth + 'px';
+        console.log("WIDTH INITIAL " + screenWidth);
+        canvas.width = screenWidth;
+        canvas.height = canvasHeight;
+        cnn_x = Math.floor(cnn_x*canvas.width);
+        cnn_x_ = Math.floor(cnn_x_*canvas.width) - cnn_x;
+        cnn_y = Math.floor(cnn_y*canvas.height);
+        cnn_y_ = Math.floor(cnn_y_*canvas.height) - cnn_y;
+        // Update the Webcam Values wrt the canvas dimensions
+        wc_x = Math.floor(wc_x*canvas.width);
+        wc_x_ = Math.floor(wc_x_*canvas.width) - wc_x;
+        wc_y = Math.floor(wc_y*canvas.height);
+        wc_y_ = Math.floor(wc_y_*canvas.height) - wc_y;
+        wc_coords = [wc_x,wc_y,wc_x_,wc_y_];
+        // Update the 3D Model Values wrt the canvas dimensions
+        m3d_x = Math.floor(m3d_x*canvas.width);
+        m3d_x_ = Math.floor(m3d_x_*canvas.width) - m3d_x;
+        m3d_y = Math.floor(m3d_y*canvas.height);
+        m3d_y_ = Math.floor(m3d_y_*canvas.height) - m3d_y;
+
+        // Update the FRM Model Values wrt the canvas dimensions
+        frm_x = Math.floor(frm_x*canvas.width);
+        frm_x_ = Math.floor(frm_x_*canvas.width) - frm_x;
+        frm_y = Math.floor(frm_y*canvas.height);
+        frm_y_ = Math.floor(frm_y_*canvas.height) - frm_y;
+
+        // Update the FRM Model Values wrt the canvas dimensions
+        labels_x = Math.floor(labels_x*canvas.width);
+        labels_x_ = Math.floor(labels_x_*canvas.width) - labels_x;
+        labels_y = Math.floor(labels_y*canvas.height);
+        labels_y_ = Math.floor(labels_y_*canvas.height) - labels_y;
+        prev_face = "";
+        
+        labelCanvas.height = labels_y_;
+        labelCanvas.width = labels_x_;
+        ctxLabels = labelCanvas.getContext('2d');
+        console.log(headerHeight)
+        // Buttons
+        document.getElementById("logoutButton").style.width = "100px"
+        document.getElementById("fullScreenButton").style.width = "100px"
+        document.getElementById("logoutButton").style.height = Math.floor(headerHeight/2) + 'px'
+        document.getElementById("fullScreenButton").style.height = Math.floor(headerHeight/2) + 'px'
+        document.getElementById("moduleSelectButton").style.height = Math.floor(headerHeight/2) + 'px'
+        document.getElementById("mySidenav").style.top = Math.floor(headerHeight) + 'px'
+    }
+      
+    
+      
+      setupScreenSizes();
+      
+    
+      
+    function fullScreenButtonClicked(){
+        // Go full screen 
+        if (doneLoading > 40){
+
+          function openFullScreen(){  
+                if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+              } else if (elem.mozRequestFullScreen) { /* Firefox */
+                elem.mozRequestFullScreen();
+              } else if (elem.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
+                elem.webkitRequestFullscreen();
+              } else if (elem.msRequestFullscreen) { /* IE/Edge */
+                elem.msRequestFullscreen();
+              }
+              else{
+                 console.log("DIDN'T WORK") 
+              } 
+          }
+        function closeFullScreen(){
+            /* Close fullscreen */
+              if (document.exitFullscreen) {
+                document.exitFullscreen();
+              } else if (document.mozCancelFullScreen) { /* Firefox */
+                document.mozCancelFullScreen();
+              } else if (document.webkitExitFullscreen) { /* Chrome, Safari and Opera */
+                document.webkitExitFullscreen();
+              } else if (document.msExitFullscreen) { /* IE/Edge */
+                document.msExitFullscreen();
+              }
+
+        }
+         if (isFullScreen){
+             closeFullScreen(); 
+         }
+        else{
+            openFullScreen();
+        }
+        isFullScreen = !isFullScreen;
+
+        screenHeight = document.getElementById("mySidenav").offsetHeight + 30;
+        screenWidth = document.getElementById("mySidenav2").offsetWidth;
+        //document.getElementById("mySidenav").style.height = screenHeight + 'px';
+        setupScreenSizes();
+        console.log("updating the frame.")
+        context.drawImage(base_image, 0, 0, canvas.width, canvas.height);
+
+
+        }    
+
+    }
+
+
+
+    
+    function initHeaderTable(){
+        var currentdate = new Date();
+        var dateTimeCanvas = document.querySelector('#dateTimeCanvas');
+        var ctxDateTime;
+        var dateText;
+        
+        // Initialize the header table Properties      
+        document.getElementById('header_table_button').style.width = Math.floor(0.061777456647398844*screen.width) + 'px';
+        document.getElementById('header_table_logo_1').style.width = Math.floor(0.12427745664739884*screen.width) + 'px';
+        document.getElementById('header_table_empty_space_left').style.width = Math.floor(0.2651734104046243*screen.width) + 'px';
+        document.getElementById('header_table_logo_2').style.width = Math.floor(0.08670520231213873*screen.width) + 'px';
+        document.getElementById('header_table_empty_space_right').style.width = Math.floor(0.08815028901734104*screen.width) + 'px';
+        document.getElementById('header_table_date_time').style.width = Math.floor(0.08959537572254335*screen.width) + 'px';
+        document.getElementById('header_table_logo_3').style.width = Math.floor(0.16582369942196531*screen.width) + 'px';
+        document.getElementById('header_table_logout').style.width = Math.floor(0.03851156069364174*screen.width) + 'px';
+        
+
+        var logo1Image = document.createElement('img');
+        var logo2Image = document.createElement('img');
+        var logo3Image = document.createElement('img');        
+        logo1Image.src = 'static/images/logo1.jpg';
+        logo1Image.style.width = document.getElementById('header_table_logo_1').style.width;
+        logo1Image.style.height = headerHeight;
+        logo2Image.src = 'static/images/logo2.jpg';
+        logo2Image.style.width = document.getElementById('header_table_logo_2').style.width;
+        logo3Image.src = 'static/images/logo3WiFi.jpg';
+        logo3Image.style.width = document.getElementById('header_table_logo_3').style.width;
+        document.getElementById('header_table_logo_1').appendChild(logo1Image);
+        document.getElementById('header_table_logo_2').appendChild(logo2Image);
+        document.getElementById('header_table_logo_3').appendChild(logo3Image);
+        // Update the time.
+        setInterval(function(){
+              currentdate = new Date();
+              dateText = currentdate.getDate() + "/"
+                        + (currentdate.getMonth()+1)  + "/" 
+                        + currentdate.getFullYear() + "    "  
+                        + currentdate.getHours() + ":"  
+                        + currentdate.getMinutes()
+                console.log("DATE: " + dateText)
+                document.getElementById("header_table_date_time_p1").innerHTML = dateText;
+          },5000);
+        
+        function closeSideBar(){
+            document.getElementById("mySidenav").style.width = "0";
+            document.getElementById("dashboard_body").style.marginLeft = "0";
+        }
+        document.getElementById("fullScreenButton").addEventListener("click",fullScreenButtonClicked );
+        document.getElementById("moduleSelectButton").addEventListener("click",function(){
+            document.getElementById("mySidenav").style.width = "250px";
+            document.getElementById("dashboard_body").style.marginLeft = "250px";
+        } );
+        document.getElementById("sideBarCloseButton").addEventListener("click", function(){
+            closeSideBar();
+        });
+        
+        
+        document.getElementById("side_bar_weapon_only").addEventListener("click", function(){
+            moduleEnableWeaponOnly = !moduleEnableWeaponOnly;
+            if (moduleEnableWeaponOnly == true){
+                document.getElementById("side_bar_weapon_only").style.color = "#00FF00"
+            }
+            else{
+                document.getElementById("side_bar_weapon_only").style.color = "#FF0000"
+            }
+            sendResultData();
+        });
+        document.getElementById("side_bar_weapon_part").addEventListener("click", function(){
+            moduleEnableWeaponParts = !moduleEnableWeaponParts;
+            if (moduleEnableWeaponParts == true){
+                document.getElementById("side_bar_weapon_part").style.color = "#00FF00"
+            }
+            else{
+                document.getElementById("side_bar_weapon_part").style.color = "#FF0000"
+            }
+            sendResultData();
+        });
+        document.getElementById("side_bar_y9k").addEventListener("click", function(){
+            moduleEnable9K = !moduleEnable9K;
+            if (moduleEnable9K == true){
+                document.getElementById("side_bar_y9k").style.color = "#00FF00"
+            }
+            else{
+                document.getElementById("side_bar_y9k").style.color = "#FF0000"
+            }
+            sendResultData();
+        });
+        document.getElementById("side_bar_coco").addEventListener("click", function(){
+            moduleEnableCoco = !moduleEnableCoco;
+            if (moduleEnableCoco == true){
+                document.getElementById("side_bar_coco").style.color = "#00FF00"
+            }
+            else{
+                document.getElementById("side_bar_coco").style.color = "#FF0000"
+            }
+            sendResultData();
+        });
+        document.getElementById("side_bar_show_all_classes").addEventListener("click", function(){
+            moduleEnableShowAllClasses = !moduleEnableShowAllClasses;
+            if (moduleEnableShowAllClasses == true){
+                document.getElementById("side_bar_show_all_classes").style.color = "#00FF00"
+            }
+            else{
+                document.getElementById("side_bar_show_all_classes").style.color = "#FF0000"
+            }
+            sendResultData();
+        });
+        document.getElementById("side_bar_frm").addEventListener("click", function(){
+            moduleEnableFRM = !moduleEnableFRM;
+            if (moduleEnableFRM == true){
+                document.getElementById("side_bar_frm").style.color = "#00FF00"
+            }
+            else{
+                document.getElementById("side_bar_frm").style.color = "#FF0000"
+            }
+            sendResultData();
+        });
+        
+        
+        
+
+        
+    }
+    initHeaderTable();
+    
+      
+
+
+
     
     
-    // Define the location of the CNN Object in the canvas
-    var cnn_x = 0.07369791666, cnn_x_ = 0.24010416666, cnn_y = 0.3574074074, cnn_y_ = 0.95601851851;
-    var wc_x = 0.25703125, wc_y = 0.22407407407407406, wc_x_ = 0.7252604166666666, wc_y_ = 0.6555555555555556;
-    var m3d_x = 0.7432291666666667, m3d_y = 0.6773148148148148, m3d_x_ = 0.9346354166666667, m3d_y_ = 0.9560185185185185;
-    var frm_x = 0.7421875, frm_y = 0.12731481481481483, frm_x_ = 0.9361979166666666, frm_y_ = 0.3773148148148148;
-    var labels_x = 0.74375, labels_y = 0.399537037037037, labels_x_ = 0.9346354166666667, labels_y_ = 0.6509259259259259;
-    cnn_x = Math.floor(cnn_x*canvas.width);
-    cnn_x_ = Math.floor(cnn_x_*canvas.width) - cnn_x;
-    cnn_y = Math.floor(cnn_y*canvas.height);
-    cnn_y_ = Math.floor(cnn_y_*canvas.height) - cnn_y;
-    // Update the Webcam Values wrt the canvas dimensions
-    wc_x = Math.floor(wc_x*canvas.width);
-    wc_x_ = Math.floor(wc_x_*canvas.width) - wc_x;
-    wc_y = Math.floor(wc_y*canvas.height);
-    wc_y_ = Math.floor(wc_y_*canvas.height) - wc_y;
-    wc_coords = [wc_x,wc_y,wc_x_,wc_y_];
-    // Update the 3D Model Values wrt the canvas dimensions
-    m3d_x = Math.floor(m3d_x*canvas.width);
-    m3d_x_ = Math.floor(m3d_x_*canvas.width) - m3d_x;
-    m3d_y = Math.floor(m3d_y*canvas.height);
-    m3d_y_ = Math.floor(m3d_y_*canvas.height) - m3d_y;
-
-    // Update the FRM Model Values wrt the canvas dimensions
-    frm_x = Math.floor(frm_x*canvas.width);
-    frm_x_ = Math.floor(frm_x_*canvas.width) - frm_x;
-    frm_y = Math.floor(frm_y*canvas.height);
-    frm_y_ = Math.floor(frm_y_*canvas.height) - frm_y;
-
-    // Update the FRM Model Values wrt the canvas dimensions
-    labels_x = Math.floor(labels_x*canvas.width);
-    labels_x_ = Math.floor(labels_x_*canvas.width) - labels_x;
-    labels_y = Math.floor(labels_y*canvas.height);
-    labels_y_ = Math.floor(labels_y_*canvas.height) - labels_y;
 
     base_image = new Image();
-    base_image.src = 'static/images/bg_template.jpg';
-
+    base_image.src = 'static/images/bg_template_v2.jpg';
+      
     base_image.onload = function(){
         context = canvas.getContext('2d');
         context.drawImage(base_image, 0, 0, canvas.width, canvas.height);
@@ -91,13 +354,8 @@
         loadLidarImages();
     }
     function drawCNN(){
-      context.fillStyle = "#FF00FF";
-      context.fillRect(cnn_x, cnn_y, cnn_x_, cnn_y_);  
     }
     function make_webcam(){
-        // Dummy holder for our CNN
-        context.fillStyle = "#FF00FF";
-        context.fillRect(wc_x, wc_y, wc_x_, wc_y_); 
         wcVideoCanvas.height = wc_y_;
         wcVideoCanvas.width = wc_x_;
         ctxWcVideo = wcVideoCanvas.getContext('2d');
@@ -108,20 +366,11 @@
     }
 
     function make_3dmodel(){
-    // Dummy holder for our CNN
-    context.fillStyle = "#FF0000";
-    context.fillRect(m3d_x, m3d_y, m3d_x_, m3d_y_); 
     }
 
     function make_frm(){
-    // Dummy holder for our CNN
-    context.fillStyle = "#FF0000";
-    context.fillRect(frm_x, frm_y, frm_x_, frm_y_); 
     }
     function make_labels(){
-    // Dummy holder for our CNN
-    context.fillStyle = "#FF0000";
-    context.fillRect(labels_x, labels_y, labels_x_, labels_y_); 
     labelCanvas.height = labels_y_;
     labelCanvas.width = labels_x_;
     ctxLabels = labelCanvas.getContext('2d');
@@ -251,7 +500,7 @@
         }
         else if (name == "omar"){
             image = faceOmar;
-        }      
+        }     
         context.drawImage(image, frm_x, frm_y,frm_x_,frm_y_); 
     }
     function drawLidarFrame(name, counter){
@@ -300,7 +549,7 @@
 
         var WIDTH = Math.floor(labelCanvas.width*0.03);
         var HEIGHT = Math.floor(labelCanvas.height*0.15);
-        function gen_dynamic_image_label(text){
+        function gen_dynamic_image_label(text){ 
             fontScale = 10;
 
             fontColor = (255,255,255);
@@ -386,39 +635,36 @@
           
       }
   }
-  var prev_labels;
-  var prev_face;
-  var labels;
-  var face = "mask";
-  var modelName = "default"
-  var modelCounter = 0;
+  
   setInterval(function(){
-      drawClassLabelFrame();
+      if (doneLoading >= 40){
+          drawClassLabelFrame();
+      }
   },500);
+      
+      
   setInterval(function(){
-  if (doneLoading >= 7 && prev_face != face){
-      // Draw the bounding boxes
-        for (var i = 0, len = openCvCoords.length; i < len; ++i) {
+      for (var i = 0, len = openCvCoords.length; i < len; ++i) {
             var data = openCvCoords[i];
             if (data.type == "face_display"){
                 face = data.name
             }
-      } 
-      drawFaceFrame(face);
-      prev_face = face;
-  }
+         if (data.type == "model_display"){
+                modelName = data.name
+            }
+      }
+      
+      if (doneLoading >= 7 && prev_face != face){
+
+          drawFaceFrame(face);
+          prev_face = face;
+      }
     },500);
       
   // Draw the Lidar Frame
   setInterval(function(){
   if (doneLoading >= 42){
       openCvCoords = tempOpenCvCoords;
-        for (var i = 0, len = openCvCoords.length; i < len; ++i) {
-            var data = openCvCoords[i];
-            if (data.type == "model_display"){
-                modelName = data.name
-            }
-        } 
       modelCounter = drawLidarFrame(modelName,modelCounter);
   }
     },100);
@@ -428,7 +674,9 @@
     },500);
       
       
+    
       
+  
       
       
       
@@ -516,6 +764,7 @@
         }
       // Update the entire canvas
       ctx.drawImage(wcVideoCanvas, wc_coords[0], wc_coords[1], wc_coords[2], wc_coords[3]);
+
   }
 
   update = function() {
@@ -531,9 +780,6 @@
             return ws_image_np.send(blob);
         };
     }, 'image/jpeg');
-
-    
-
     
   };
   
@@ -562,12 +808,13 @@
   ws_cnn_data.onopen = function() {
     return console.log("Opened CNN Data websocket");
   };
+    
+    
+    
   // Move this to a new websocket
   ws_return.onmessage = function(e) {
     tempOpenCvCoords = JSON.parse(e.data);
-    ws_return.send(JSON.stringify({'image_properties':{'height':wc_coords[3],
-                                         'width':wc_coords[2],
-                                        }}));
+    sendResultData();
     return console.log('receiving message' + e.data);
   };
 

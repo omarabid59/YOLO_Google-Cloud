@@ -1,14 +1,49 @@
 {% extends "index.html" %}
 
 {% block content %}
-    <div id = 'dashboard_header'>
-        HEY
+<div id="mySidenav2" class="topemptynav"></div>
+    <div id = 'dashboard_header' style="background-color:#373540">
+        <table id = 'header_table'>
+          <tr>
+            <td id = 'header_table_button'>
+              <button type="button" id="moduleSelectButton" style="background-color:#8E8D91;border:2px solid #000000;color:white">Module Selector
+                </button>
+              </td>
+            <td id = 'header_table_logo_1'></td>
+            <td id = 'header_table_empty_space_left'></td>
+            <td id = 'header_table_logo_2'></td>
+            <td id = 'header_table_empty_space_right'></td>
+            <td id = 'header_table_date_time'>
+                <p id="header_table_date_time_p1" style="color:white"></p>
+              </td>
+            <td id = 'header_table_logo_3'></td>
+            <td id = 'header_table_logout'>
+                <button type="button" id="logoutButton" style="background-color:#8E8D91;border:2px solid #000000;color:white" >Logout</button>
+                <button type="button" id="fullScreenButton" style="background-color:#8E8D91;border:2px solid #000000;color:white" >Full Screen</button>
+              </td>
+          </tr>
+        </table>
     </div>
-    <div id = 'dashboard_body'>
-        <canvas id="canvas" ></canvas>
-        <video id="live" width="640" height="480" autoplay></video>
+    <div id = 'main'>
+        
+        <div id="mySidenav" class="sidenav">
+          <a href="javascript:void(0)" id='sideBarCloseButton' class="closebtn">&times;</a>
+          <a href="#" id="side_bar_weapon_only" style="color:red">Weapon Only Module</a>
+          <a href="#" id="side_bar_weapon_part" style="color:red">Weapon Parts Module</a>
+          <a href="#" id="side_bar_y9k" style="color:red">9000 Classes</a>
+          <a href="#" id="side_bar_coco" style="color:red;">80 Classes</a>
+          <a href="#" id="side_bar_frm" style="color:red">Face Recognition Module</a>
+          <a href="#" id="side_bar_show_all_classes" style="color:red">Show All Classes</a>
+        </div>
+
+        <div id = 'dashboard_body'>
+            <canvas id="canvas" ></canvas>
+            <video id="live" width="640" height="480" autoplay></video>
+            
+        </div>
     </div>
-    
+
+
 
 
 
