@@ -7,3 +7,9 @@ pyee
 pylibsrtp
 pyopenssl
 sphinxcontrib-asyncio
+pyzmq
+numpy
+cython
+yolo34py-gpu
+pandas
+glob
