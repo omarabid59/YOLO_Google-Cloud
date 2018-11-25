@@ -11,11 +11,8 @@ pc.addEventListener('signalingstatechange', function() {
     console.log('signalingstatechange -> ' + pc.signalingState);
 }, false);
 
-// connect CNN Video
+
 pc.addEventListener('track', function(evt) {
-    if (evt.track.kind == 'video')
-        console.log("Added element")
-        evnStreamCNN = evt.streams[0];
 });
 
 
@@ -97,10 +94,6 @@ function startDataChannels() {
         video: true
     };
 
-
-    /*
-        Resolutions: 640x480, 1280x720
-    */
 
     constraints.video = {
         width: parseInt(videoWidth, 0),
