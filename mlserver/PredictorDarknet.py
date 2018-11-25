@@ -61,7 +61,7 @@ class DarknetYOLO(threading.Thread):
         for indx,x in enumerate(self.CLASS_NAMES):
             if "'" in x:
                 self.CLASS_NAMES[indx] = x.replace("'","")
-        return PATH_TO_LABELS
+        
 
 
 
