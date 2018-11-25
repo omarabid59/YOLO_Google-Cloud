@@ -8,9 +8,9 @@ Object detection is a difficult and computationally expensive problem and not ev
 
 An interesting solution has also been presented on [WebRTCHacks](https://webrtchacks.com/webrtc-cv-tensorflow/). I've tested it myself and it works well. However, that solution sends Webcam video as a series of encoded jpg images resulting in significant bandwidth usage and latency that is not present in this solution.
 
-Doing object detection on the cloud eliminates these problems. What's more is that since you can choose which GPU you want to use, you can run much "heavy" deep neural networks while still achieving close to real time accuracy?
+Doing object detection on the cloud eliminates these problems. What's more is that since you can choose which GPU you want to use, you can run much "heavy" deep neural networks while still achieving close to real time accuracy.
 
-I've tested inference/testing on the following models, all with a latency of less than 300 ms. The latency will depend on the location of the Google Cloud Server and where you are located (more on this later).
+Inference/testing on the following models has been verified, all with a latency of less than 300 ms. The latency will depend on the location of the Google Cloud Server and where you are located (more on this later).
 - [ssd inception v2 coco](http://download.tensorflow.org/models/object_detection/ssd_inception_v2_coco_2018_01_28.tar.gz)
 - [YOLO COCO](https://pjreddie.com/darknet/yolo/)
 - [YOLO 9000](https://pjreddie.com/darknet/yolo/)
@@ -18,7 +18,7 @@ I've tested inference/testing on the following models, all with a latency of les
 # DEPENDENCIES
 - We use a YOLO python GPU binding. See the [original repository for more details](https://github.com/madhawav/YOLO3-4-Py)
 - For sending real time video streams over the browser, we use an ``asyncio`` implementation of ``WebRTC`` called [aiortc](https://github.com/jlaine/aiortc). Aiortc must be installed according to their instruction and working before this repository will be usable. Here are a summary of the steps I have compiled:
-    
+
 
 
 # Installation
