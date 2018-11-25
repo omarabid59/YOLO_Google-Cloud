@@ -39,7 +39,6 @@ class DarknetYOLO(threading.Thread):
 
         self.output_data = OutputClassificationData()
         self.output_data.score_thresh = score_thresh
-        self.output_data.category_index = self.category_index
         self.frames_per_ms = fps;
 
 
@@ -61,7 +60,7 @@ class DarknetYOLO(threading.Thread):
         for indx,x in enumerate(self.CLASS_NAMES):
             if "'" in x:
                 self.CLASS_NAMES[indx] = x.replace("'","")
-        
+
 
 
 

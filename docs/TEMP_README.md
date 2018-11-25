@@ -22,7 +22,7 @@
 1. Next, download the YOLO model cfg file and weights file by running the following commands:
 	- ``mkdir -p ~/YOLO_Google-Cloud/mlserver/model``
 	- ``cd ~/YOLO_Google-Cloud/mlserver/model``
-	- ``wget https://github.com/pjreddie/darknet/blob/master/cfg/yolov3.cfg``
+	- ``wget https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3.cfg``
 	- ``wget https://pjreddie.com/media/files/yolov3.weights``
 	- ``wget https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names``
 
