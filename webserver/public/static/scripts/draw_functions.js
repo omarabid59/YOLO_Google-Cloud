@@ -17,7 +17,8 @@ var intervalWebcamFrame = setInterval(function(){
             // Ensure that the rectangle is inside the allowable area.
             y = bb[0] + 0;
             w = bb[3] - bb[1];
-            h = TEXT_BOX_HEIGHT;
+            //h = TEXT_BOX_HEIGHT;
+            h = Math.ceil(y*TEXT_BOX_HEIGHT);
             ctxWcVideo.fillRect(x,y,w,h);
             // Draw the text inside the rectangle
             ctxWcVideo.font = bbTextSize + "pt Arial";
