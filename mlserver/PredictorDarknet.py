@@ -1,7 +1,6 @@
 import threading
 import time
 import glob
-import threading
 import numpy as np
 from pydarknet import Detector
 from pydarknet import Image as darknetImage
