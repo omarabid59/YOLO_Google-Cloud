@@ -12,4 +12,7 @@ numpy
 cython
 yolo34py-gpu
 pandas
-glob
+glob3
+aiohttp
+aiortc
+opencv-python

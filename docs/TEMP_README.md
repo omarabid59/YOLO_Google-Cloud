@@ -3,3 +3,15 @@
 
 2. Open up an SSH terminal of the newly created instance as shown below.
 ![alt text](https://github.com/omarabid59/YOLO_Google-Cloud/blob/master/docs/step_1.png)
+
+
+3. You will get a prompt asking to install NVIDIA drivers. Enter `y`.
+![alt text](https://github.com/omarabid59/YOLO_Google-Cloud/blob/master/docs/step_2.png)
+4. Install ffmpeg and additional packages.
+	- ``sudo apt install ffmpeg``
+	- ``sudo apt install libavdevice-dev libavfilter-dev libopus-dev libvpx-dev pkg-config``
+5. Once the installation is complete, clone the git repository and install the dependencies. Grab a cup of coffee. This will take a few minutes.
+	- ``git clone https://github.com/omarabid59/YOLO_Google-Cloud.git``
+	- ``cd YOLO_Google-Cloud``
+	- ``pip3 install -r requirements.txt``
+6.

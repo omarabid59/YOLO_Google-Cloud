@@ -40,16 +40,16 @@ class VideoTransformTrack(VideoStreamTrack):
     async def recv(self):
         frame = await self.track.recv()
         try:
-            # Send via MQTT 
+            # Send via MQTT
             img = frame.to_ndarray(format='bgr24')
             encoded, buffer = cv2.imencode('.jpg', img)
             # Send Webcam stream from HTTP Server -> ML Server
-            self.footage_socket.send(base64.b64encode(buffer))   
-            return frame    
+            self.footage_socket.send(base64.b64encode(buffer))
+            return frame
         except Exception as e:
             print("An error occured sending over MQTT: " + str(e))
             return frame
-        
+
 class DetectionDataHolder(threading.Thread):
     def __init__(self):
         """
@@ -79,7 +79,7 @@ class DetectionDataHolder(threading.Thread):
     def stop(self):
         self.done = True
 
-        
+
 detectionData = DetectionDataHolder()
 detectionData.start()
 
@@ -120,7 +120,7 @@ async def offer(request):
             except:
                 print("Failed receiving module data.")
                 channel.send("{}")
-                
+
 
 
     @pc.on('iceconnectionstatechange')
@@ -134,7 +134,7 @@ async def offer(request):
     def on_track(track):
         # Add the CNN Video
         print('Track %s received' % track.kind)
-        
+
 
         if track.kind == 'video':
             local_video = VideoTransformTrack(track)
@@ -175,7 +175,7 @@ async def on_shutdown(app):
 
 
 def MAIN():
-    
+
 
     if DEBUG:
         logging.basicConfig(level=logging.DEBUG)
@@ -186,13 +186,13 @@ def MAIN():
     app.router.add_get('/client.js', javascript)
     app.router.add_post('/offer', offer)
     app.router.add_static('/static/', ROOT + 'public/static/', name='static',show_index=True)
-    
+
 
     ssl_ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
     ssl_ctx.load_cert_chain("ssl/domain.crt",
                            "ssl/domain.key")
-    web.run_app(app, port=port)
+    web.run_app(app, port=port,ssl_context=ssl_ctx)
 
-    
-    
+
+
 MAIN()
