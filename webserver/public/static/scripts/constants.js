@@ -40,7 +40,6 @@ var currentData = "{}",
     tempData = "{}";
 
 // Label Data
-var TEXT_BOX_HEIGHT,
-    bbTextSize,
-    bbTextWPadding,
-    bbTextHPadding;
+var TEXT_BOX_HEIGHT=0.1,
+    bbTextSize=12,
+    bbTextHPadding=5;
