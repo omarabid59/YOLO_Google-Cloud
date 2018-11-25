@@ -15,7 +15,7 @@ class DarknetYOLO(threading.Thread):
                          YOLO_DIR,
                          score_thresh=0.5,
                          fps=0.08):
-
+        print("DIRECTORY: " + YOLO_DIR)
         self.createDataFile(YOLO_DIR)
         YOLO_DATA =  glob.glob(YOLO_DIR + '*.data')[0]
         YOLO_CFG =  glob.glob(YOLO_DIR + '*.cfg')[0]
