@@ -1,7 +1,7 @@
 # INTRODUCTION
 This repository demonstrates how one can do Object Detection in real time using GPUs that are available on Google Cloud for free using Google's 1 year credits. We use a [You Only Look Once](https://pjreddie.com/darknet/yolo/) archictecture for object detection that can be visualized in a web browser as shown below.
 
-![alt text](https://github.com/omarabid59/cloud_ml_webrtc/blob/master/demo.gif "Demo of Object Detection on the Cloud!")
+![alt text](https://github.com/omarabid59/cloud_ml_webrtc/blob/master/docs/demo.gif "Demo of Object Detection on the Cloud!")
 
 ## Why should I use this?
 Object detection is a difficult and computationally expensive problem and not everyone has access to GPUs to do real time object detection. Furthermore, there are alternatives. For example, Tensorflow offers lightweight mobilenet models (see [here](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md)), but they come at the cost of reduced accuracy. Object detection is also available on iOS/Android, but they face the same issues mentioned earlier.
