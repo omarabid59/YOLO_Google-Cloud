@@ -1,2 +1,5 @@
 1. Create an instance of the Virtual Machine by running the following in the Google Cloud Shell. Replace ``YOUR_PROJECT_NAME`` with the name of your project the VM should be deployed in.  
 	- ``gcloud beta compute --project=YOUR_PROJECT_NAME instances create instance-1 --zone=us-east1-b --machine-type=n1-standard-2 --subnet=default --network-tier=PREMIUM --maintenance-policy=TERMINATE --service-account=740303654106-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/devstorage.read_only,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/trace.append --accelerator=type=nvidia-tesla-p100,count=1 --tags=http-server,https-server --image=c2-deeplearning-tf-1-12-cu100-20181120 --image-project=ml-images --boot-disk-size=60GB --boot-disk-type=pd-standard --boot-disk-device-name=instance-1``
+
+2. Open up an SSH terminal of the newly created instance as shown below.
+![alt text](https://github.com/omarabid59/YOLO_Google-Cloud/blob/master/docs/step_1.png)
