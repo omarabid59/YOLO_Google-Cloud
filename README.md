@@ -1,5 +1,5 @@
 # INTRODUCTION
-This repository demonstrates how one can do Object Detection in real time using GPUs that are available on Google Cloud for free using Google's 1 year credits. The resulting object detection results can be visualized in a web browser as shown below.
+This repository demonstrates how one can do Object Detection in real time using GPUs that are available on Google Cloud for free using Google's 1 year credits. We use a [You Only Look Once](https://pjreddie.com/darknet/yolo/) archictecture for object detection that can be visualized in a web browser as shown below.
 
 ![alt text](https://github.com/omarabid59/cloud_ml_webrtc/blob/master/demo.gif "Demo of Object Detection on the Cloud!")
 
