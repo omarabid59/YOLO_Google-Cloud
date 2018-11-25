@@ -26,5 +26,12 @@
 	- ``wget https://pjreddie.com/media/files/yolov3.weights``
 	- ``wget https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names``
 
-# Install Tensorflow's Object Detection Application
-	-
+# Quick Start
+1. First run the Machine Learning Server.
+	- ``nohup python3 ~/YOLO_Google-Cloud/mlserver/mlserverclient.py &``
+2. Next, run the http server. If you see the command output below, it means you are good to go!
+	- ``cd ~/YOLO_Google-Cloud/webserver/ && python3 httpserver.py``
+![alt text](https://github.com/omarabid59/YOLO_Google-Cloud/blob/master/docs/step_3.png)
+3. Now, go to your browser and type in the following. Where ``YOUR_IP_ADDRESS`` is the one you obtained in step 2.
+	- ``https:YOUR_IP_ADDRESS:8889``
+That's it!
