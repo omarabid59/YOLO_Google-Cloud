@@ -6,7 +6,6 @@ from pydarknet import Detector
 from pydarknet import Image as darknetImage
 import pandas as pd
 from data_structures import OutputClassificationData
-from object_detection.utils import label_map_util
 
 
 
