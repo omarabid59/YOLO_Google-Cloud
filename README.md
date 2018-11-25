@@ -8,7 +8,7 @@ Object detection is a difficult and computationally expensive problem and not ev
 
 Doing object detection on the cloud eliminates these problems. What's more is that since you can choose which GPU you want to use, you can run much "heavy" deep neural networks while still achieving close to real time accuracy?
 
-I've tested inference/testing on the following models, all with a latency of less than 100 ms. The latency will depend on the location of the Google Cloud Server and where you are located (more on this later).
+I've tested inference/testing on the following models, all with a latency of less than 500 ms. The latency will depend on the location of the Google Cloud Server and where you are located (more on this later).
 - [ssd inception v2 coco](http://download.tensorflow.org/models/object_detection/ssd_inception_v2_coco_2018_01_28.tar.gz)
 - [YOLO COCO](https://pjreddie.com/darknet/yolo/)
 - [YOLO 9000](https://pjreddie.com/darknet/yolo/)
