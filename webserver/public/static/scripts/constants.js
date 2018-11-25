@@ -35,7 +35,7 @@ var elem = document.documentElement;
 // Update variables
 const webcamUpdateIntervalMS = 100;
 
-// ML Result DATA. This needs to be renamed.
+// ML Result DATA. 
 var currentData = "{}",
     tempData = "{}";
 
