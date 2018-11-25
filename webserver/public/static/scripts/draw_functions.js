@@ -1,4 +1,4 @@
-var intervalWebcamFrame = setInterval(function(){
+function intervalWebcamFrame (){
     // This draws the video then updates the bounding boxes. First offscreen rendering.
     ctxWcVideo.drawImage(video, 0, 0, wc_coords[2], wc_coords[3]);
     currentData = JSON.parse(tempData);
@@ -36,7 +36,7 @@ var intervalWebcamFrame = setInterval(function(){
         
       // Update the entire canvas
       ctx.drawImage(wcVideoCanvas, wc_coords[0], wc_coords[1], wc_coords[2], wc_coords[3]);
-},webcamUpdateIntervalMS);
+};
     
 
 
