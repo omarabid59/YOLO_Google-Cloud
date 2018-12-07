@@ -56,7 +56,7 @@ Inference/testing on the following models has been verified, all with a latency 
 	- ``cd ~/YOLO_Google-Cloud/webserver/ && python3 httpserver.py``
 ![alt text](https://github.com/omarabid59/YOLO_Google-Cloud/blob/master/docs/step_3.png)
 3. Now, go to your browser and type in the following. Where ``YOUR_IP_ADDRESS`` is the one you obtained in step 2.
-	- ``https:YOUR_IP_ADDRESS:8889``
+	- ``https://YOUR_IP_ADDRESS:8889``
 That's it!
 
 # IMPORTANT NOTE.
