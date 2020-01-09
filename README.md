@@ -1,6 +1,6 @@
 # INTRODUCTION
 
-**NOTE. This repository is no longer actively being maintained by me. However, if others would like to make changes, please put up a Pull request and I'll do my best to merge the changes ASAP. Happy coding! :)**
+**NOTE. This repository is no longer actively maintained by me. However, if others would like to make changes, please put up a Pull request and I'll do my best to merge the changes ASAP. Happy coding! :)**
 
 This repository demonstrates how one can do Object Detection in real time using GPUs that are available on Google Cloud for free using Google's 1 year credits. We use a [You Only Look Once](https://pjreddie.com/darknet/yolo/) archictecture for object detection that can be visualized in a web browser as shown below.
 
